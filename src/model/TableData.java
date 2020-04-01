@@ -16,7 +16,11 @@ public class TableData <T> {
 	protected boolean hasHeaders = true;
 	public TableData(String fileName) throws IOException {
 		file = new File(fileName);
-		this.data = getDataWithHeaders();
+		if(hasHeaders) {
+			this.data = getDataWithHeaders();
+		} else {
+			this.data = getDataWithOutHeaders();
+		}
 	}
 	
 	@SuppressWarnings({ "unchecked", "resource" })
@@ -73,7 +77,7 @@ public class TableData <T> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<T> getDataByColumn(String columnName, String columnValue) {
+	public List<T> getDataByColumnName(String columnName, String columnValue) {
 		List<T> stateData = new ArrayList<>();
 		for(T m : this.data) {
 			if( ((Map<String, String>)m).get(columnName).equals(columnValue) ) {
