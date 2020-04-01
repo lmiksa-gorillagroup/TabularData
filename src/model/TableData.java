@@ -10,25 +10,43 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TableData {
+public class TableData <T> {
 	protected File file = null;
-	protected List<Map<String, String>> data = null;
+	protected List<T> data = null;
 	protected boolean hasHeaders = true;
 	public TableData(String fileName) throws IOException {
 		file = new File(fileName);
 		this.data = getDataWithHeaders();
 	}
 	
-	protected List<Map<String, String>> getDataWithHeaders() throws IOException {
-		List<Map<String, String>> data = new ArrayList<>();
+	@SuppressWarnings({ "unchecked", "resource" })
+	protected List<T> getDataWithOutHeaders() throws IOException {
+		List<T> data = new ArrayList<>();
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = null;
+		while( (line = br.readLine()) != null) {
+			String[] tokens = line.split(",");			
+			T row = (T) new ArrayList<>(); 
+			for(int i = 0; i < tokens.length; i++) {
+				((List<String>)row).add(tokens[i]);
+			}
+			data.add(row);
+		}
+		
+		return data;
+	}
+	
+	@SuppressWarnings({ "unchecked" })
+	protected List<T> getDataWithHeaders() throws IOException {
+		List<T> data = new ArrayList<>();
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String line = null;
 		List<String> headers = getHeaders(br);
 		while( (line = br.readLine()) != null) {
 			String[] tokens = line.split(",");			
-			Map<String, String> row = new HashMap<>(); 
+			T row = (T) new HashMap<>(); 
 			for(int i = 0; i < tokens.length; i++) {
-				row.put(headers.get(i), tokens[i]);
+				((Map<String, String>)row).put(headers.get(i), tokens[i]);
 			}
 			data.add(row);
 		}
@@ -45,16 +63,20 @@ public class TableData {
 		}
 		return headers;
 	}
-	public List<Map<String, String>> getData() {
+	public List<T> getData() {
 		return this.data;
 	}
+	
+	@SuppressWarnings({ "unchecked" })
 	public String getFiled(int rowNumber, String columnName) {
-		return data.get(rowNumber).get(columnName);
+		return ((Map<String, String>)data.get(rowNumber)).get(columnName);
 	}
-	public List<Map<String, String>> getDataByColumn(String columnName, String columnValue) {
-		List<Map<String, String>> stateData = new ArrayList<>();
-		for(Map<String, String> m : this.data) {
-			if(m.get(columnName).equals(columnValue)) {
+	
+	@SuppressWarnings("unchecked")
+	public List<T> getDataByColumn(String columnName, String columnValue) {
+		List<T> stateData = new ArrayList<>();
+		for(T m : this.data) {
+			if( ((Map<String, String>)m).get(columnName).equals(columnValue) ) {
 				stateData.add(m);
 			}
 		}
